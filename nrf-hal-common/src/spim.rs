@@ -446,6 +446,10 @@ where
         self.0.psel.sck.reset();
         self.0.psel.mosi.reset();
         self.0.psel.miso.reset();
+
+        // Disable SPIM instance.
+        self.0.enable.write(|w| w.enable().disabled());
+
         (
             self.0,
             Pins {
