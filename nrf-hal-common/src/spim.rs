@@ -447,8 +447,24 @@ where
         self.0.psel.mosi.reset();
         self.0.psel.miso.reset();
 
+        // This 'work around' is needed to convince the 'Easy'DMA to actually turn off
+        // and stop the SPIM3 interface from using excessive amounts of power when deinitialized.
+        let device = &self.0;
+
+        device.events_stopped.reset();
+        device.tasks_stop.write(|w| w.tasks_stop().trigger());
+        while device.events_stopped.read().bits() == 0 {
+            cortex_m::asm::nop();
+        }
+
+        if self.0.events_end.read().bits() != 0 {
+            // Reset the event, otherwise it will always read `1` from now on.
+            self.0.events_end.write(|w| w);
+        }
+
         // Disable SPIM instance.
         self.0.enable.write(|w| w.enable().disabled());
+        self.0.config.reset();
 
         (
             self.0,
