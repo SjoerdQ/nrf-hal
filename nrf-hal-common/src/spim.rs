@@ -464,7 +464,10 @@ where
 
         // Disable SPIM instance.
         self.0.enable.write(|w| w.enable().disabled());
+        // Reset every register that we configured when creating this instance.
         self.0.config.reset();
+        self.0.frequency.reset();
+        self.0.orc.reset();
 
         (
             self.0,
